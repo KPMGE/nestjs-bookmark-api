@@ -1,0 +1,16 @@
+version: '3'
+
+services:
+  db: 
+    image: postgres:14-alpine
+    container_name: bookmark-db
+    ports:
+      - 5432:5432
+    environment: 
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: bookmark
+
+networks:
+  bookmark:
+    driver: bridge
