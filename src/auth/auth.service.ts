@@ -3,12 +3,31 @@ import { PrismaService } from "src/prisma/prisma.service";
 import { AuthDto } from "./dto";
 import { hash } from 'argon2'
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime";
+import { verify } from 'argon2'
 
 @Injectable()
 export class AuthService {
   constructor(private prismaService: PrismaService) { }
 
   async signin(dto: AuthDto) {
+    const user = await this.prismaService.user.findUnique({
+      where: {
+        email: dto.email
+      }
+    })
+
+    if (!user) throw new ForbiddenException('wrong credentials')
+
+    const passwordsMatch = await verify(user.passwordHash, dto.password)
+    if (!passwordsMatch) throw new ForbiddenException('wrong credentials')
+
+    delete user.passwordHash
+
+    return user
+  }
+
+  async signup(dto: AuthDto) {
+
     const passwordHash = await hash(dto.password)
     try {
       const user = await this.prismaService.user.create({
@@ -29,9 +48,5 @@ export class AuthService {
       }
       throw error
     }
-  }
-
-  signup() {
-    return { data: "i'm signed up" }
   }
 }
