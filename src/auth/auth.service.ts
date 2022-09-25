@@ -24,7 +24,6 @@ export class AuthService {
     if (!passwordsMatch) throw new ForbiddenException('wrong credentials')
 
     const token = await this.signToken(user.id, user.email)
-
     return {
       access_token: token
     }
@@ -40,9 +39,11 @@ export class AuthService {
         }
       })
 
-      delete user.passwordHash
+      const token = await this.signToken(user.id, user.email)
+      return {
+        access_token: token
+      }
 
-      return user
     } catch (error) {
       if (error instanceof PrismaClientKnownRequestError) {
         if (error.code === 'P2002') {
